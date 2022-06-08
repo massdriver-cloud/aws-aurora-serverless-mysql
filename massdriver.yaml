@@ -1,0 +1,158 @@
+schema: draft-07
+name: aws-aurora-serverless-mysql
+description: "Highly Available Serverless MySQL Service At 1/10th The Cost Of Commercial-Grade Databases."
+ref: github.com/massdriver-cloud/aws-aurora-serverless-mysql
+access: private
+type: bundle
+
+steps:
+  - path: src
+    provisioner: terraform
+
+params:
+  examples:
+    - __name: Development
+      backup_retention_period: 1
+      skip_final_snapshot: true
+      deletion_protection: false
+      scaling_configuration:
+        max_capacity: 2
+        min_capacity: 2
+        timeout_action: ForceApplyCapacityChange
+    - __name: Production
+      backup_retention_period: 30
+      skip_final_snapshot: false
+      deletion_protection: true
+      scaling_configuration:
+        max_capacity: 32
+        min_capacity: 2
+        timeout_action: RollbackCapacityChange
+  required:
+    - username
+    - port
+  properties:
+    username:
+      title: Username
+      description: Administrative (root) DB username
+      type: string
+      default: root
+      pattern: ^[a-zA-Z0-9]{1,16}$
+      message:
+        pattern: Username must be 1 to 16 characters, including uppercase and lowercase letters and numbers
+    port:
+      title: Port
+      description: The port on which to accept connections.
+      default: 3306
+      $ref: https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/port.json
+    deletion_protection:
+      title: Deletion Protection
+      description: If the DB instance should have deletion protection enabled.
+      type: boolean
+      default: true
+    enable_http_endpoint:
+      title: Enable HTTP Endpoint
+      description: Whether or not to enable the Data API for a serverless Aurora database engine.
+      type: boolean
+      default: false
+    backup_retention_period:
+      title: Backup Retention Period
+      description: How long to keep backups for in days.
+      type: integer
+      default: 1
+      minimum: 1
+      maximum: 35
+    allow_vpc_access:
+      title: Allow VPC Access
+      description: Allow the entire VPC to access the RDS database.
+      type: boolean
+      default: true
+    skip_final_snapshot:
+      title: Skip Final Snapshot
+      description: Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created.
+      type: boolean
+      default: true
+    allow_major_version_upgrade:
+      title: Allow Major Version Upgrade
+      description: Determines whether major engine upgrades are allowed when changing engine version.
+      type: boolean
+      default: false
+    scaling_configuration:
+      title: Scaling Configuration
+      description: Serverless scaling properties.
+      type: object
+      required:
+        - auto_pause
+        - min_capacity
+        - max_capacity
+        - seconds_until_auto_pause
+        - timeout_action
+      properties:
+        auto_pause:
+          title: Auto Pause
+          description: Whether to enable automatic pause. A DB cluster can be paused only when it's idle (it has no connections).
+          type: boolean
+          default: true
+        max_capacity:
+          title: Max Capacity
+          description: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the maximum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless provides more capacity for the DB cluster from warm pool of resources when its workload is above these thresholds. Aurora Serverless can increase capacity to the maximum capacity unit.
+          type: number
+          default: 4
+          enum: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+        min_capacity:
+          title: Min Capacity
+          description: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the minimum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless reduces the resources for the DB cluster when its workload is below these thresholds. Aurora Serverless can reduce capacity down to the minimum capacity unit.
+          type: number
+          default: 2
+          enum: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+        seconds_until_auto_pause:
+          title: Seconds Until Auto Pause
+          description: The time, in seconds, before an Aurora DB cluster in serverless mode is paused.
+          type: number
+          default: 300
+          minimum: 300
+          maximum: 86400
+        timeout_action:
+          title: Timeout Action
+          description: The action to take when the timeout is reached. [Learn more](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html#aurora-serverless.how-it-works.timeout-action)
+          type: string
+          default: RollbackCapacityChange
+          enum:
+            - ForceApplyCapacityChange
+            - RollbackCapacityChange
+
+connections:
+  required:
+    - vpc
+    - aws_authentication
+  properties:
+    vpc:
+      $ref: massdriver/aws-vpc
+    aws_authentication:
+      $ref: massdriver/aws-iam-role
+
+artifacts:
+  required:
+    - authentication
+  properties:
+    authentication:
+      $ref: massdriver/mysql-authentication
+
+ui:
+  ui:order:
+    - port
+    - username
+    - scaling_configuration
+    - allow_major_version_upgrade
+    - enable_http_endpoint
+    - backup_retention_period
+    - skip_final_snapshot # TODO: should this just be false
+    - deletion_protection # Need to keep this so people CAN delete (turn it off, then delete)
+    - allow_vpc_access # TODO: remove this when application bundles are working
+    - "*"
+  scaling_configuration:
+    ui:order:
+      - min_capacity
+      - max_capacity
+      - auto_pause
+      - seconds_until_auto_pause
+      - timeout_action
