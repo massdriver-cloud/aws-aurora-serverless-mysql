@@ -5,7 +5,7 @@ locals {
 }
 
 module "database_capacity_alarm" {
-  source = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=54da4ef "
+  source = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=b91993f"
 
   depends_on = [
     aws_rds_cluster.main
