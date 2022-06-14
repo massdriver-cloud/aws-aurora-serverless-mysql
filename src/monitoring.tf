@@ -3,10 +3,14 @@ locals {
   database_capacity_percent   = 0.9
   database_capacity_threshold = local.database_capacity_percent * var.scaling_configuration["max_capacity"]
 }
+module "alarm_channel" {
+  source      = "github.com/massdriver-cloud/terraform-modules//aws-alarm-channel?ref=aa08797"
+  md_metadata = var.md_metadata
+}
 
 module "database_capacity_alarm" {
-  source = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=3ec7921"
-
+  source        = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=aa08797"
+  sns_topic_arn = module.alarm_channel.arn
   depends_on = [
     aws_rds_cluster.main
   ]
