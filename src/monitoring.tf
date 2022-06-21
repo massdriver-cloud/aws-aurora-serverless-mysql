@@ -9,13 +9,14 @@ module "alarm_channel" {
 }
 
 module "database_capacity_alarm" {
-  source        = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=aa08797"
+  source        = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=8997456"
   sns_topic_arn = module.alarm_channel.arn
   depends_on = [
     aws_rds_cluster.main
   ]
 
   md_metadata         = var.md_metadata
+  display_name        = "Database Capacity"
   message             = "RDS Aurora ${aws_rds_cluster.main.cluster_identifier}: Serverless Database Capacity > ${local.database_capacity_percent * 100}% of Max"
   alarm_name          = "${aws_rds_cluster.main.cluster_identifier}-highServerlessDatabaseCapacity"
   comparison_operator = "GreaterThanThreshold"
