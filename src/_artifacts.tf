@@ -20,7 +20,6 @@ locals {
 resource "massdriver_artifact" "authentication" {
   field                = "authentication"
   provider_resource_id = aws_rds_cluster.main.arn
-  specification_path   = "../massdriver.yaml"
   name                 = "MySQL user credentials: ${aws_rds_cluster.main.cluster_identifier}"
   artifact = jsonencode(
     {
