@@ -29,7 +29,6 @@ params:
         timeout_action: RollbackCapacityChange
   required:
     - username
-    - port
   properties:
     username:
       title: Username
@@ -39,11 +38,6 @@ params:
       pattern: ^[a-zA-Z0-9]{1,16}$
       message:
         pattern: Username must be 1 to 16 characters, including uppercase and lowercase letters and numbers
-    port:
-      title: Port
-      description: The port on which to accept connections.
-      default: 3306
-      $ref: https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/port.json
     deletion_protection:
       title: Deletion Protection
       description: If the DB instance should have deletion protection enabled.
@@ -61,11 +55,12 @@ params:
       default: 1
       minimum: 1
       maximum: 35
-    allow_vpc_access:
-      title: Allow VPC Access
-      description: Allow the entire VPC to access the RDS database.
-      type: boolean
-      default: true
+    subnet_type:
+      title: Database Subnet
+      description: Deploy the database to internal subnets (cannot reach the internet) or private subnets (internet egress traffic allowed)
+      type: string
+      enum: [internal, private]
+      default: internal
     skip_final_snapshot:
       title: Skip Final Snapshot
       description: Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created.
@@ -139,7 +134,6 @@ artifacts:
 
 ui:
   ui:order:
-    - port
     - username
     - scaling_configuration
     - allow_major_version_upgrade
@@ -147,7 +141,7 @@ ui:
     - backup_retention_period
     - skip_final_snapshot # TODO: should this just be false
     - deletion_protection # Need to keep this so people CAN delete (turn it off, then delete)
-    - allow_vpc_access # TODO: remove this when application bundles are working
+    - subnet_type
     - "*"
   scaling_configuration:
     ui:order:
