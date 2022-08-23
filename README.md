@@ -47,8 +47,50 @@ Form input parameters for configuring a bundle for deployment.
 <summary>View</summary>
 
 <!-- PARAMS:START -->
+## Properties
 
-**Params coming soon**
+- **`allow_major_version_upgrade`** *(boolean)*: Determines whether major engine upgrades are allowed when changing engine version. Default: `False`.
+- **`backup_retention_period`** *(integer)*: How long to keep backups for in days. Minimum: `1`. Maximum: `35`. Default: `1`.
+- **`deletion_protection`** *(boolean)*: If the DB instance should have deletion protection enabled. Default: `True`.
+- **`enable_http_endpoint`** *(boolean)*: Whether or not to enable the Data API for a serverless Aurora database engine. Default: `False`.
+- **`scaling_configuration`** *(object)*: Serverless scaling properties.
+  - **`auto_pause`** *(boolean)*: Whether to enable automatic pause. A DB cluster can be paused only when it's idle (it has no connections). Default: `True`.
+  - **`max_capacity`** *(number)*: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the maximum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless provides more capacity for the DB cluster from warm pool of resources when its workload is above these thresholds. Aurora Serverless can increase capacity to the maximum capacity unit. Must be one of: `[1, 2, 4, 8, 16, 32, 64, 128, 256]`. Default: `4`.
+  - **`min_capacity`** *(number)*: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the minimum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless reduces the resources for the DB cluster when its workload is below these thresholds. Aurora Serverless can reduce capacity down to the minimum capacity unit. Must be one of: `[1, 2, 4, 8, 16, 32, 64, 128, 256]`. Default: `2`.
+  - **`seconds_until_auto_pause`** *(number)*: The time, in seconds, before an Aurora DB cluster in serverless mode is paused. Minimum: `300`. Maximum: `86400`. Default: `300`.
+  - **`timeout_action`** *(string)*: The action to take when the timeout is reached. [Learn more](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html#aurora-serverless.how-it-works.timeout-action). Must be one of: `['ForceApplyCapacityChange', 'RollbackCapacityChange']`. Default: `RollbackCapacityChange`.
+- **`skip_final_snapshot`** *(boolean)*: Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. Default: `True`.
+- **`subnet_type`** *(string)*: Deploy the database to internal subnets (cannot reach the internet) or private subnets (internet egress traffic allowed). Must be one of: `['internal', 'private']`. Default: `internal`.
+- **`username`** *(string)*: Administrative (root) DB username. Default: `root`.
+## Examples
+
+  ```json
+  {
+      "__name": "Development",
+      "backup_retention_period": 1,
+      "deletion_protection": false,
+      "scaling_configuration": {
+          "max_capacity": 2,
+          "min_capacity": 2,
+          "timeout_action": "ForceApplyCapacityChange"
+      },
+      "skip_final_snapshot": true
+  }
+  ```
+
+  ```json
+  {
+      "__name": "Production",
+      "backup_retention_period": 30,
+      "deletion_protection": true,
+      "scaling_configuration": {
+          "max_capacity": 32,
+          "min_capacity": 2,
+          "timeout_action": "RollbackCapacityChange"
+      },
+      "skip_final_snapshot": false
+  }
+  ```
 
 <!-- PARAMS:END -->
 
@@ -62,9 +104,162 @@ Connections from other bundles that this bundle depends on.
 <summary>View</summary>
 
 <!-- CONNECTIONS:START -->
+## Properties
 
-**Connections coming soon**
+- **`aws_authentication`** *(object)*: . Cannot contain additional properties.
+  - **`data`** *(object)*
+    - **`arn`** *(string)*: Amazon Resource Name.
 
+      Examples:
+      ```json
+      "arn:aws:rds::ACCOUNT_NUMBER:db/prod"
+      ```
+
+      ```json
+      "arn:aws:ec2::ACCOUNT_NUMBER:vpc/vpc-foo"
+      ```
+
+    - **`external_id`** *(string)*: An external ID is a piece of data that can be passed to the AssumeRole API of the Security Token Service (STS). You can then use the external ID in the condition element in a role's trust policy, allowing the role to be assumed only when a certain value is present in the external ID.
+  - **`specs`** *(object)*
+    - **`aws`** *(object)*: .
+      - **`region`** *(string)*: AWS Region to provision in.
+
+        Examples:
+        ```json
+        "us-west-2"
+        ```
+
+      - **`resource`** *(string)*
+      - **`service`** *(string)*
+      - **`zone`** *(string)*: AWS Availability Zone.
+
+        Examples:
+- **`vpc`** *(object)*: . Cannot contain additional properties.
+  - **`data`** *(object)*
+    - **`infrastructure`** *(object)*
+      - **`arn`** *(string)*: Amazon Resource Name.
+
+        Examples:
+        ```json
+        "arn:aws:rds::ACCOUNT_NUMBER:db/prod"
+        ```
+
+        ```json
+        "arn:aws:ec2::ACCOUNT_NUMBER:vpc/vpc-foo"
+        ```
+
+      - **`cidr`** *(string)*
+
+        Examples:
+        ```json
+        "10.100.0.0/16"
+        ```
+
+        ```json
+        "192.24.12.0/22"
+        ```
+
+      - **`internal_subnets`** *(array)*
+        - **Items** *(object)*: AWS VCP Subnet.
+          - **`arn`** *(string)*: Amazon Resource Name.
+
+            Examples:
+            ```json
+            "arn:aws:rds::ACCOUNT_NUMBER:db/prod"
+            ```
+
+            ```json
+            "arn:aws:ec2::ACCOUNT_NUMBER:vpc/vpc-foo"
+            ```
+
+          - **`aws_zone`** *(string)*: AWS Availability Zone.
+
+            Examples:
+          - **`cidr`** *(string)*
+
+            Examples:
+            ```json
+            "10.100.0.0/16"
+            ```
+
+            ```json
+            "192.24.12.0/22"
+            ```
+
+
+          Examples:
+      - **`private_subnets`** *(array)*
+        - **Items** *(object)*: AWS VCP Subnet.
+          - **`arn`** *(string)*: Amazon Resource Name.
+
+            Examples:
+            ```json
+            "arn:aws:rds::ACCOUNT_NUMBER:db/prod"
+            ```
+
+            ```json
+            "arn:aws:ec2::ACCOUNT_NUMBER:vpc/vpc-foo"
+            ```
+
+          - **`aws_zone`** *(string)*: AWS Availability Zone.
+
+            Examples:
+          - **`cidr`** *(string)*
+
+            Examples:
+            ```json
+            "10.100.0.0/16"
+            ```
+
+            ```json
+            "192.24.12.0/22"
+            ```
+
+
+          Examples:
+      - **`public_subnets`** *(array)*
+        - **Items** *(object)*: AWS VCP Subnet.
+          - **`arn`** *(string)*: Amazon Resource Name.
+
+            Examples:
+            ```json
+            "arn:aws:rds::ACCOUNT_NUMBER:db/prod"
+            ```
+
+            ```json
+            "arn:aws:ec2::ACCOUNT_NUMBER:vpc/vpc-foo"
+            ```
+
+          - **`aws_zone`** *(string)*: AWS Availability Zone.
+
+            Examples:
+          - **`cidr`** *(string)*
+
+            Examples:
+            ```json
+            "10.100.0.0/16"
+            ```
+
+            ```json
+            "192.24.12.0/22"
+            ```
+
+
+          Examples:
+  - **`specs`** *(object)*
+    - **`aws`** *(object)*: .
+      - **`region`** *(string)*: AWS Region to provision in.
+
+        Examples:
+        ```json
+        "us-west-2"
+        ```
+
+      - **`resource`** *(string)*
+      - **`service`** *(string)*
+      - **`zone`** *(string)*: AWS Availability Zone.
+
+        Examples:
 <!-- CONNECTIONS:END -->
 
 </details>
