@@ -1,7 +1,7 @@
 schema: draft-07
 name: aws-aurora-serverless-mysql
 description: "Highly Available Serverless MySQL Service At 1/10th The Cost Of Commercial-Grade Databases."
-ref: github.com/massdriver-cloud/aws-aurora-serverless-mysql
+source_url: github.com/massdriver-cloud/aws-aurora-serverless-mysql
 access: private
 type: bundle
 
