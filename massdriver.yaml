@@ -29,7 +29,16 @@ params:
         timeout_action: RollbackCapacityChange
   required:
     - username
+    - mysql_version
+    - apply_immediately
   properties:
+    major_version:
+      title: MySQL Version
+      type: string
+      default: "5.7"
+      description: "Aurora V1 currently only supports MySQL 5.7"
+      enum:
+        - "5.7"
     username:
       title: Username
       description: Administrative (root) DB username
@@ -55,6 +64,11 @@ params:
       default: 1
       minimum: 1
       maximum: 35
+    apply_immediately:
+      title: Apply Immediately
+      type: boolean
+      description: Apply changes immediately or during your cluster's next scheduled maintenance window.
+      default: true
     subnet_type:
       title: Subnet Type
       description: Deploy the database to internal subnets (cannot reach the internet) or private subnets (internet egress traffic allowed)
@@ -66,11 +80,6 @@ params:
       description: Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created.
       type: boolean
       default: true
-    allow_major_version_upgrade:
-      title: Allow Major Version Upgrade
-      description: Determines whether major engine upgrades are allowed when changing engine version.
-      type: boolean
-      default: false
     scaling_configuration:
       title: Scaling Configuration
       description: Serverless scaling properties.
@@ -114,6 +123,57 @@ params:
           enum:
             - ForceApplyCapacityChange
             - RollbackCapacityChange
+    monitoring:
+      type: object
+      title: Monitoring
+      properties:
+        mode:
+          title: Alarm Mode
+          description: Enable and customize CloudWatch metric alarms.
+          type: string
+          default: AUTOMATED
+          oneOf:
+            - const: AUTOMATED
+              title: Automated
+            - const: CUSTOM
+              title: Custom
+            - const: DISABLED
+              title: Disabled
+      dependencies:
+        mode:
+          oneOf:
+            - properties:
+                mode:
+                  const: AUTOMATED
+            - properties:
+                mode:
+                  const: DISABLED
+            - properties:
+                mode:
+                  const: CUSTOM
+                alarms:
+                  type: object
+                  title: Alarms
+                  properties:
+                    database_capacity:
+                      title: Database Capacity
+                      type: object
+                      required:
+                        - threshold
+                        - period
+                      properties:
+                        threshold:
+                          type: integer
+                          title: Threshold
+                          description: "The current capacity of an Aurora Serverless DB cluster. (Unit: Count)"
+                          minimum: 1
+                        period:
+                          type: integer
+                          title: Period
+                          minimum: 1
+                          maximum: 86400
+                          default: 300
+                          description: The length of time associated with this statistic
 
 connections:
   required:
@@ -134,15 +194,17 @@ artifacts:
 
 ui:
   ui:order:
+    - major_version
     - username
+    - deletion_protection
     - scaling_configuration
-    - allow_major_version_upgrade
-    - enable_http_endpoint
+    - monitoring
     - backup_retention_period
-    - skip_final_snapshot # TODO: should this just be false
-    - deletion_protection # Need to keep this so people CAN delete (turn it off, then delete)
+    - skip_final_snapshot
     - subnet_type
+    - enable_http_endpoint
     - "*"
+    - apply_immediately
   scaling_configuration:
     ui:order:
       - min_capacity
