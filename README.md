@@ -56,10 +56,17 @@ Form input parameters for configuring a bundle for deployment.
 <!-- PARAMS:START -->
 ## Properties
 
-- **`allow_major_version_upgrade`** *(boolean)*: Determines whether major engine upgrades are allowed when changing engine version. Default: `False`.
+- **`apply_immediately`** *(boolean)*: Apply changes immediately or during your cluster's next scheduled maintenance window. Default: `True`.
 - **`backup_retention_period`** *(integer)*: How long to keep backups for in days. Minimum: `1`. Maximum: `35`. Default: `1`.
 - **`deletion_protection`** *(boolean)*: If the DB instance should have deletion protection enabled. Default: `True`.
 - **`enable_http_endpoint`** *(boolean)*: Whether or not to enable the Data API for a serverless Aurora database engine. Default: `False`.
+- **`major_version`** *(string)*: Aurora V1 currently only supports MySQL 5.7. Must be one of: `['5.7']`. Default: `5.7`.
+- **`monitoring`** *(object)*
+  - **`mode`** *(string)*: Enable and customize CloudWatch metric alarms. Default: `AUTOMATED`.
+    - **One of**
+      - Automated
+      - Custom
+      - Disabled
 - **`scaling_configuration`** *(object)*: Serverless scaling properties.
   - **`auto_pause`** *(boolean)*: Whether to enable automatic pause. A DB cluster can be paused only when it's idle (it has no connections). Default: `True`.
   - **`max_capacity`** *(number)*: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the maximum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless provides more capacity for the DB cluster from warm pool of resources when its workload is above these thresholds. Aurora Serverless can increase capacity to the maximum capacity unit. Must be one of: `[1, 2, 4, 8, 16, 32, 64, 128, 256]`. Default: `4`.
@@ -136,11 +143,6 @@ Connections from other bundles that this bundle depends on.
         "us-west-2"
         ```
 
-      - **`resource`** *(string)*
-      - **`service`** *(string)*
-      - **`zone`** *(string)*: AWS Availability Zone.
-
-        Examples:
 - **`vpc`** *(object)*: . Cannot contain additional properties.
   - **`data`** *(object)*
     - **`infrastructure`** *(object)*
@@ -262,11 +264,6 @@ Connections from other bundles that this bundle depends on.
         "us-west-2"
         ```
 
-      - **`resource`** *(string)*
-      - **`service`** *(string)*
-      - **`zone`** *(string)*: AWS Availability Zone.
-
-        Examples:
 <!-- CONNECTIONS:END -->
 
 </details>
