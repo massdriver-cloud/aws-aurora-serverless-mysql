@@ -32,7 +32,7 @@ params:
     - mysql_version
     - apply_immediately
   properties:
-    major_version:
+    mysql_version:
       title: MySQL Version
       type: string
       default: "5.7"
