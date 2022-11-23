@@ -74,6 +74,17 @@ Form input parameters for configuring a bundle for deployment.
   - **`seconds_until_auto_pause`** *(number)*: The time, in seconds, before an Aurora DB cluster in serverless mode is paused. Minimum: `300`. Maximum: `86400`. Default: `300`.
   - **`timeout_action`** *(string)*: The action to take when the timeout is reached. [Learn more](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html#aurora-serverless.how-it-works.timeout-action). Must be one of: `['ForceApplyCapacityChange', 'RollbackCapacityChange']`. Default: `RollbackCapacityChange`.
 - **`skip_final_snapshot`** *(boolean)*: Determines whether a final DB snapshot is created before the DB cluster is deleted. If true is specified, no DB snapshot is created. Default: `True`.
+- **`source_snapshot`** *(string)*: On **creation**, restores a database from snapshot.
+
+  Examples:
+  ```json
+  "arn:aws:rds::ACCOUNT_NUMBER:db/prod"
+  ```
+
+  ```json
+  "arn:aws:ec2::ACCOUNT_NUMBER:vpc/vpc-foo"
+  ```
+
 - **`subnet_type`** *(string)*: Deploy the database to internal subnets (cannot reach the internet) or private subnets (internet egress traffic allowed). Must be one of: `['internal', 'private']`. Default: `internal`.
 - **`username`** *(string)*: Administrative (root) DB username. Default: `root`.
 ## Examples

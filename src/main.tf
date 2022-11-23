@@ -17,9 +17,10 @@ resource "random_id" "snapshot_identifier" {
 }
 
 resource "aws_rds_cluster" "main" {
-  engine_mode    = "serverless"
-  engine         = "aurora-mysql"
-  engine_version = var.mysql_version
+  engine_mode         = "serverless"
+  engine              = "aurora-mysql"
+  engine_version      = var.mysql_version
+  snapshot_identifier = var.source_snapshot
 
   db_cluster_parameter_group_name = "default.aurora-mysql${var.mysql_version}"
   storage_encrypted               = true
