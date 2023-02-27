@@ -18,14 +18,14 @@ locals {
 }
 
 module "alarm_channel" {
-  source      = "github.com/massdriver-cloud/terraform-modules//aws-alarm-channel?ref=aa08797"
+  source      = "github.com/massdriver-cloud/terraform-modules//aws/alarm-channel?ref=343d3e4"
   md_metadata = var.md_metadata
 }
 
 module "database_capacity_alarm" {
   count = lookup(local.alarms, "database_capacity", null) == null ? 0 : 1
 
-  source        = "github.com/massdriver-cloud/terraform-modules//aws-cloudwatch-alarm?ref=8997456"
+  source        = "github.com/massdriver-cloud/terraform-modules//aws/cloudwatch-alarm?ref=343d3e4"
   sns_topic_arn = module.alarm_channel.arn
   depends_on = [
     aws_rds_cluster.main
