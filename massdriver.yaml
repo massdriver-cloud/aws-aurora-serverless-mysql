@@ -1,56 +1,54 @@
 schema: draft-07
 name: aws-aurora-serverless-mysql
-description: "Aurora v1. Highly Available Serverless MySQL Service At 1/10th The Cost Of Commercial-Grade Databases."
-source_url: github.com/massdriver-cloud/aws-aurora-serverless-mysql
-access: public
-type: infrastructure
-
+version: 1.0.0
+description: Aurora v1. Highly Available Serverless MySQL Service At 1/10th The Cost Of Commercial-Grade Databases.
+source_url: https://github.com/massdriver-cloud/aws-aurora-serverless-mysql
+type: application
 steps:
-  - path: src
-    provisioner: terraform
-
+- path: src
+  provisioner: opentofu
 params:
   examples:
-    - __name: Development
-      backup_retention_period: 1
-      skip_final_snapshot: true
-      deletion_protection: false
-      scaling_configuration:
-        max_capacity: 2
-        min_capacity: 2
-        timeout_action: ForceApplyCapacityChange
-    - __name: Production
-      backup_retention_period: 30
-      skip_final_snapshot: false
-      deletion_protection: true
-      scaling_configuration:
-        max_capacity: 32
-        min_capacity: 2
-        timeout_action: RollbackCapacityChange
+  - __name: Development
+    backup_retention_period: 1
+    skip_final_snapshot: true
+    deletion_protection: false
+    scaling_configuration:
+      max_capacity: 2
+      min_capacity: 2
+      timeout_action: ForceApplyCapacityChange
+  - __name: Production
+    backup_retention_period: 30
+    skip_final_snapshot: false
+    deletion_protection: true
+    scaling_configuration:
+      max_capacity: 32
+      min_capacity: 2
+      timeout_action: RollbackCapacityChange
   required:
-    - username
-    - mysql_version
-    - apply_immediately
+  - username
+  - mysql_version
+  - apply_immediately
   properties:
     mysql_version:
       title: MySQL Version
       type: string
-      default: "5.7"
-      description: "Aurora V1 currently only supports MySQL 5.7"
+      default: '5.7'
+      description: Aurora V1 currently only supports MySQL 5.7
       enum:
-        - "5.7"
+      - '5.7'
     source_snapshot:
-      $md.immutable: true
+      "$md.immutable": true
       title: Create Database from Snapshot
       description: On **creation**, restores a database from snapshot.
-      $ref: https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/aws-arn.json
+      "$ref": https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/aws-arn.json
       pattern: "^arn:aws:[a-zA-Z0-9._-]*:[a-zA-Z0-9._-]*:[0-9]{12}:cluster-snapshot:[a-zA-Z0-9/._-]+$"
     username:
       title: Username
       description: Administrative (root) DB username
       type: string
       default: root
-      pattern: ^[a-zA-Z0-9]{1,16}$
+      pattern: "^[a-zA-Z0-9]{1,16}$"
       message:
         pattern: Username must be 1 to 16 characters, including uppercase and lowercase letters and numbers
     deletion_protection:
@@ -79,7 +77,9 @@ params:
       title: Subnet Type
       description: Deploy the database to internal subnets (cannot reach the internet) or private subnets (internet egress traffic allowed)
       type: string
-      enum: [internal, private]
+      enum:
+      - internal
+      - private
       default: internal
     skip_final_snapshot:
       title: Skip Final Snapshot
@@ -91,11 +91,11 @@ params:
       description: Serverless scaling properties.
       type: object
       required:
-        - auto_pause
-        - min_capacity
-        - max_capacity
-        - seconds_until_auto_pause
-        - timeout_action
+      - auto_pause
+      - min_capacity
+      - max_capacity
+      - seconds_until_auto_pause
+      - timeout_action
       properties:
         auto_pause:
           title: Auto Pause
@@ -107,13 +107,31 @@ params:
           description: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the maximum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless provides more capacity for the DB cluster from warm pool of resources when its workload is above these thresholds. Aurora Serverless can increase capacity to the maximum capacity unit.
           type: number
           default: 4
-          enum: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+          enum:
+          - 1
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
+          - 64
+          - 128
+          - 256
         min_capacity:
           title: Min Capacity
           description: Each capacity unit is equivalent to a specific compute and memory configuration. Based on the minimum capacity unit setting, Aurora Serverless automatically creates scaling rules for thresholds for CPU utilization, connections, and available memory. Aurora Serverless reduces the resources for the DB cluster when its workload is below these thresholds. Aurora Serverless can reduce capacity down to the minimum capacity unit.
           type: number
           default: 2
-          enum: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+          enum:
+          - 1
+          - 2
+          - 4
+          - 8
+          - 16
+          - 32
+          - 64
+          - 128
+          - 256
         seconds_until_auto_pause:
           title: Seconds Until Auto Pause
           description: The time, in seconds, before an Aurora DB cluster in serverless mode is paused.
@@ -127,8 +145,8 @@ params:
           type: string
           default: RollbackCapacityChange
           enum:
-            - ForceApplyCapacityChange
-            - RollbackCapacityChange
+          - ForceApplyCapacityChange
+          - RollbackCapacityChange
     monitoring:
       type: object
       title: Monitoring
@@ -139,83 +157,80 @@ params:
           type: string
           default: AUTOMATED
           oneOf:
-            - const: AUTOMATED
-              title: Automated
-            - const: CUSTOM
-              title: Custom
-            - const: DISABLED
-              title: Disabled
+          - const: AUTOMATED
+            title: Automated
+          - const: CUSTOM
+            title: Custom
+          - const: DISABLED
+            title: Disabled
       dependencies:
         mode:
           oneOf:
-            - properties:
-                mode:
-                  const: AUTOMATED
-            - properties:
-                mode:
-                  const: DISABLED
-            - properties:
-                mode:
-                  const: CUSTOM
-                alarms:
-                  type: object
-                  title: Alarms
-                  properties:
-                    database_capacity:
-                      title: Database Capacity
-                      type: object
-                      required:
-                        - threshold
-                        - period
-                      properties:
-                        threshold:
-                          type: integer
-                          title: Threshold
-                          description: "The current capacity of an Aurora Serverless DB cluster. (Unit: Count)"
-                          minimum: 1
-                        period:
-                          type: integer
-                          title: Period
-                          minimum: 1
-                          maximum: 86400
-                          default: 300
-                          description: The length of time associated with this statistic
-
+          - properties:
+              mode:
+                const: AUTOMATED
+          - properties:
+              mode:
+                const: DISABLED
+          - properties:
+              mode:
+                const: CUSTOM
+              alarms:
+                type: object
+                title: Alarms
+                properties:
+                  database_capacity:
+                    title: Database Capacity
+                    type: object
+                    required:
+                    - threshold
+                    - period
+                    properties:
+                      threshold:
+                        type: integer
+                        title: Threshold
+                        description: 'The current capacity of an Aurora Serverless DB cluster. (Unit: Count)'
+                        minimum: 1
+                      period:
+                        type: integer
+                        title: Period
+                        minimum: 1
+                        maximum: 86400
+                        default: 300
+                        description: The length of time associated with this statistic
 connections:
   required:
-    - vpc
-    - aws_authentication
+  - vpc
+  - aws_authentication
   properties:
     vpc:
-      $ref: massdriver/aws-vpc
+      "$ref": massdriver/aws-vpc
     aws_authentication:
-      $ref: massdriver/aws-iam-role
-
+      "$ref": massdriver/aws-iam-role
 artifacts:
   required:
-    - authentication
+  - authentication
   properties:
     authentication:
-      $ref: massdriver/mysql-authentication
-
+      "$ref": massdriver/mysql-authentication
 ui:
   ui:order:
-    - major_version
-    - username
-    - source_snapshot
-    - deletion_protection
-    - scaling_configuration
-    - monitoring
-    - backup_retention_period
-    - skip_final_snapshot
-    - subnet_type
-    - enable_http_endpoint
-    - "*"
-    - apply_immediately
+  - major_version
+  - username
+  - source_snapshot
+  - deletion_protection
+  - scaling_configuration
+  - monitoring
+  - backup_retention_period
+  - skip_final_snapshot
+  - subnet_type
+  - enable_http_endpoint
+  - "*"
+  - apply_immediately
   scaling_configuration:
     ui:order:
-      - min_capacity
-      - max_capacity
-      - auto_pause
-      - seconds_until_auto_pause
-      - timeout_action
+    - min_capacity
+    - max_capacity
+    - auto_pause
+    - seconds_until_auto_pause
+    - timeout_action
